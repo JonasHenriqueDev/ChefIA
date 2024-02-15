@@ -11,6 +11,9 @@ public class Receita {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column
+    private String nome;
+
     @ElementCollection
     @Column(name = "ingrediente")
     private List<String> ingredientes;
