@@ -3,15 +3,9 @@ package br.upe.ChefIA.service;
 import br.upe.ChefIA.dominio.Receita;
 import br.upe.ChefIA.dominio.dto.IngredienteDTO;
 import br.upe.ChefIA.repository.ReceitaRepository;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -30,6 +24,10 @@ public class ReceitaService {
 
     public Receita findById(Long id) {
         return receitaRepository.findById(id).get();
+    }
+
+    public void deleteById(Long id) {
+        receitaRepository.deleteById(id);
     }
 
     public Receita save(Receita receita) {
