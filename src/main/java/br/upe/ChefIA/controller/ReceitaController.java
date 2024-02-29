@@ -36,6 +36,12 @@ public class ReceitaController {
         return receitaService.save(receita);
     }
 
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteById(@PathVariable("id") Long id) {
+        receitaService.deleteById(id);
+    }
+
     @PostMapping("/gerar")
     @ResponseStatus(HttpStatus.OK)
     public List<Receita> generateReceita(@RequestBody IngredienteDTO ingredientes) {
