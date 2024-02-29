@@ -6,6 +6,7 @@ import br.upe.ChefIA.dominio.dto.ReceitaDTO;
 import br.upe.ChefIA.dominio.dto.mapper.ReceitaMapper;
 import br.upe.ChefIA.repository.ReceitaRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -38,6 +39,17 @@ public class ReceitaService {
         return receitaRepository.save(receita);
     }
 
+    public Receita update(Long id, ReceitaDTO dto) {
+        Receita current = this.findById(id);
+        Receita updated = mapper.toEntity(dto);
+
+        BeanUtils.copyProperties(updated, current, "id");
+
+        ReceitaDTO currentDTO = mapper.toDTO(current);
+
+        return this.save(currentDTO);
+    }
+
     public List<Receita> generate(IngredienteDTO dto) {
         List<Receita> generatedReceitas;
         List<String> ingredientesList;
@@ -46,7 +58,6 @@ public class ReceitaService {
         ingredientesString = dto.getIngredientesString();
         ingredientesString = ingredientesString.replaceAll("\\s+e\\s+", " ");
         ingredientesList = new ArrayList<>(Arrays.asList(ingredientesString.split("\\s+")));
-
 
         generatedReceitas = receitaRepository.findByIngredientesIn(ingredientesList);
 

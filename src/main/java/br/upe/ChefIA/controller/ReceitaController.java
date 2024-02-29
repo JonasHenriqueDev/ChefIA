@@ -32,8 +32,13 @@ public class ReceitaController {
 
     @PostMapping()
     @ResponseStatus(HttpStatus.OK)
-    public Receita add(@RequestBody ReceitaDTO receita) {
-        return receitaService.save(receita);
+    public Receita add(@RequestBody ReceitaDTO dto) {
+        return receitaService.save(dto);
+    }
+
+    @PatchMapping("/{id}")
+    public Receita editById(@PathVariable("id") Long id, @RequestBody ReceitaDTO dto) {
+        return receitaService.update(id, dto);
     }
 
     @DeleteMapping("/{id}")
