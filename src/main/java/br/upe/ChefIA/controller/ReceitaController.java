@@ -9,7 +9,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/receita")
@@ -37,7 +39,7 @@ public class ReceitaController {
     }
 
     @PatchMapping("/{id}")
-    public Receita editById(@PathVariable("id") Long id, @RequestBody ReceitaDTO dto) {
+    public Receita editById(@PathVariable("id") Long id, @RequestBody ReceitaDTO dto) throws InvocationTargetException, IllegalAccessException {
         return receitaService.update(id, dto);
     }
 
