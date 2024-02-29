@@ -1,4 +1,4 @@
-package br.upe.ChefIA;
+package br.upe.ChefIA.dominio;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;

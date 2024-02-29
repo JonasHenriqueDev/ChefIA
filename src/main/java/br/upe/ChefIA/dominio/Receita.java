@@ -1,4 +1,4 @@
-package br.upe.ChefIA;
+package br.upe.ChefIA.dominio;
 
 import lombok.Data;
 import jakarta.persistence.*;

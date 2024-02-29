@@ -1,15 +1,19 @@
 package br.upe.ChefIA.service;
 
-import br.upe.ChefIA.Receita;
+import br.upe.ChefIA.dominio.Receita;
 import br.upe.ChefIA.repository.ReceitaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class ReceitaService {
+
+    private List<Receita> generatedReceitas;
+    private List<String> ingredientesList;
 
     public final ReceitaRepository receitaRepository;
 
@@ -24,4 +28,14 @@ public class ReceitaService {
     public Receita save(Receita receita) {
         return receitaRepository.save(receita);
     }
+
+    public List<String> generate(String ingredientes) {
+        generatedReceitas = new ArrayList<Receita>();
+
+        ingredientesList = List.of(ingredientes.split("\\s+|\\se\\s"));
+
+
+        return ingredientesList;
+    }
+
 }
