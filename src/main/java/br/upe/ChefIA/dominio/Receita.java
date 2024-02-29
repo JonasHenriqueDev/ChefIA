@@ -2,6 +2,8 @@ package br.upe.ChefIA.dominio;
 
 import lombok.Data;
 import jakarta.persistence.*;
+
+import java.lang.reflect.Type;
 import java.util.List;
 
 @Data
@@ -22,6 +24,8 @@ public class Receita {
     @Column(name = "macro_ingrediente")
     private List<String> macro_ingredientes;
 
-    @Column(name = "modo_de_preparo")
+    @ElementCollection
+    @Column
+    @Lob
     private List<String> modo_de_preparo;
 }

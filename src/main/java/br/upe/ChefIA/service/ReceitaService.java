@@ -3,19 +3,24 @@ package br.upe.ChefIA.service;
 import br.upe.ChefIA.dominio.Receita;
 import br.upe.ChefIA.dominio.dto.IngredienteDTO;
 import br.upe.ChefIA.repository.ReceitaRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class ReceitaService {
 
-    private List<Receita> generatedReceitas;
-    private List<String> ingredientesList;
-    private String ingredientesString;
+public class ReceitaService {
 
     public final ReceitaRepository receitaRepository;
 
@@ -31,15 +36,24 @@ public class ReceitaService {
         return receitaRepository.save(receita);
     }
 
-    public List<String> generate(IngredienteDTO dto) {
-        generatedReceitas = new ArrayList<Receita>();
+    public List<Receita> generate(IngredienteDTO dto) {
+        List<Receita> generatedReceitas;
+        List<String> ingredientesList;
+        String ingredientesString;
 
         ingredientesString = dto.getIngredientesString();
         ingredientesString = ingredientesString.replaceAll("\\s+e\\s+", " ");
-        ingredientesList = List.of(ingredientesString.split("\\s+"));
+        ingredientesList = new ArrayList<>(Arrays.asList(ingredientesString.split("\\s+")));
 
+        generatedReceitas = receitaRepository.findByIngredientesIn(ingredientesList);
 
-        return ingredientesList;
+        Collections.shuffle(generatedReceitas);
+
+        if (generatedReceitas.size() > 3) {
+            generatedReceitas = generatedReceitas.subList(0, 3);
+        }
+
+        return generatedReceitas;
     }
 
 }

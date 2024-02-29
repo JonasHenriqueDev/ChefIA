@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.sql.SQLException;
 import java.util.List;
 
 @RestController
@@ -37,7 +38,7 @@ public class ReceitaController {
 
     @PostMapping("/gerar")
     @ResponseStatus(HttpStatus.OK)
-    public List<String> generateReceita(@RequestBody IngredienteDTO ingredientes) {
+    public List<Receita> generateReceita(@RequestBody IngredienteDTO ingredientes) {
         return  receitaService.generate(ingredientes);
     }
 }
