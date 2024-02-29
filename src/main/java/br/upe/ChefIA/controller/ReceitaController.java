@@ -2,13 +2,13 @@ package br.upe.ChefIA.controller;
 
 import br.upe.ChefIA.dominio.Receita;
 import br.upe.ChefIA.dominio.dto.IngredienteDTO;
+import br.upe.ChefIA.dominio.dto.ReceitaDTO;
 import br.upe.ChefIA.service.ReceitaService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.sql.SQLException;
 import java.util.List;
 
 @RestController
@@ -32,7 +32,7 @@ public class ReceitaController {
 
     @PostMapping()
     @ResponseStatus(HttpStatus.OK)
-    public Receita add(@RequestBody Receita receita) {
+    public Receita add(@RequestBody ReceitaDTO receita) {
         return receitaService.save(receita);
     }
 
@@ -45,6 +45,6 @@ public class ReceitaController {
     @PostMapping("/gerar")
     @ResponseStatus(HttpStatus.OK)
     public List<Receita> generateReceita(@RequestBody IngredienteDTO ingredientes) {
-        return  receitaService.generate(ingredientes);
+        return receitaService.generate(ingredientes);
     }
 }

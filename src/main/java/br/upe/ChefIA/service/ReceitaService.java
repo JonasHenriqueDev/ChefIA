@@ -2,6 +2,8 @@ package br.upe.ChefIA.service;
 
 import br.upe.ChefIA.dominio.Receita;
 import br.upe.ChefIA.dominio.dto.IngredienteDTO;
+import br.upe.ChefIA.dominio.dto.ReceitaDTO;
+import br.upe.ChefIA.dominio.dto.mapper.ReceitaMapper;
 import br.upe.ChefIA.repository.ReceitaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -16,7 +18,8 @@ import java.util.List;
 
 public class ReceitaService {
 
-    public final ReceitaRepository receitaRepository;
+    private final ReceitaRepository receitaRepository;
+    private final ReceitaMapper mapper;
 
     public List<Receita> findAll() {
         return receitaRepository.findAll();
@@ -30,7 +33,8 @@ public class ReceitaService {
         receitaRepository.deleteById(id);
     }
 
-    public Receita save(Receita receita) {
+    public Receita save(ReceitaDTO dto) {
+        Receita receita = mapper.toEntity(dto);
         return receitaRepository.save(receita);
     }
 
@@ -42,6 +46,7 @@ public class ReceitaService {
         ingredientesString = dto.getIngredientesString();
         ingredientesString = ingredientesString.replaceAll("\\s+e\\s+", " ");
         ingredientesList = new ArrayList<>(Arrays.asList(ingredientesString.split("\\s+")));
+
 
         generatedReceitas = receitaRepository.findByIngredientesIn(ingredientesList);
 
