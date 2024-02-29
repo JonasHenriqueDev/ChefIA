@@ -1,6 +1,7 @@
 package br.upe.ChefIA.controller;
 
 import br.upe.ChefIA.dominio.Receita;
+import br.upe.ChefIA.dominio.dto.IngredienteDTO;
 import br.upe.ChefIA.service.ReceitaService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -36,7 +37,7 @@ public class ReceitaController {
 
     @PostMapping("/gerar")
     @ResponseStatus(HttpStatus.OK)
-    public List<String> generateReceita(@RequestBody String ingredientes) {
+    public List<String> generateReceita(@RequestBody IngredienteDTO ingredientes) {
         return  receitaService.generate(ingredientes);
     }
 }
