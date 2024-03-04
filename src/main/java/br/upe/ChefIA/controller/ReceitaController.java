@@ -51,7 +51,13 @@ public class ReceitaController {
 
     @PostMapping("/gerar")
     @ResponseStatus(HttpStatus.OK)
-    public List<Receita> generateReceita(@RequestBody IngredienteDTO ingredientes) {
-        return receitaService.generate(ingredientes);
+    public ResponseEntity<List<Receita>> generateReceita(@RequestBody IngredienteDTO ingredientes) {
+        List<Receita> receitas = receitaService.generate(ingredientes);
+
+        if (receitas.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.ok(receitas);
     }
 }
