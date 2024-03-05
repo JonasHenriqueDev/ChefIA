@@ -7,19 +7,22 @@ import br.upe.ChefIA.dominio.dto.mapper.ReceitaMapper;
 import br.upe.ChefIA.helper.NullAwareBeanUtilsBean;
 import br.upe.ChefIA.repository.ReceitaRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.BeanUtils;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.util.ReflectionUtils;
+import org.springframework.web.server.ResponseStatusException;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 
 public class ReceitaService {
 
+    private static final String RECEITA_NOT_FOUND_MSG = "Infelizmente não sei nenhuma receita com estes ingredientes";
     private final ReceitaRepository receitaRepository;
     private final ReceitaMapper mapper;
     private final NullAwareBeanUtilsBean beanUtilsBean;
@@ -63,7 +66,9 @@ public class ReceitaService {
         generatedReceitas = receitaRepository.findByIngredientesIn(ingredientesList);
 
         Collections.shuffle(generatedReceitas);
-
+        if (generatedReceitas.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, RECEITA_NOT_FOUND_MSG);
+        }
         if (generatedReceitas.size() > 3) {
             generatedReceitas = generatedReceitas.subList(0, 3);
         }
