@@ -4,7 +4,7 @@ import br.upe.ChefIA.dominio.Receita;
 import br.upe.ChefIA.dominio.dto.IngredienteDTO;
 import br.upe.ChefIA.dominio.dto.ReceitaDTO;
 import br.upe.ChefIA.dominio.dto.mapper.ReceitaMapper;
-import br.upe.ChefIA.helper.NullAwareBeanUtilsBean;
+import br.upe.ChefIA.helper.NullAwareBeanUtils;
 import br.upe.ChefIA.repository.ReceitaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -25,7 +25,7 @@ public class ReceitaService {
     private static final String RECEITA_NOT_FOUND_MSG = "Infelizmente não sei nenhuma receita com estes ingredientes";
     private final ReceitaRepository receitaRepository;
     private final ReceitaMapper mapper;
-    private final NullAwareBeanUtilsBean beanUtilsBean;
+    private final NullAwareBeanUtils beanUtilsBean;
 
     public List<Receita> findAll() {
         return receitaRepository.findAll();
@@ -55,15 +55,21 @@ public class ReceitaService {
     }
 
     public List<Receita> generate(IngredienteDTO dto) {
-        List<Receita> generatedReceitas;
-        List<String> ingredientesList;
-        String ingredientesString;
+        List<Receita> generatedReceitas = new ArrayList<>();
+        List<String> ingredientesList = new ArrayList<>();
+        String ingredientesString = dto.getIngredientesString();
 
-        ingredientesString = dto.getIngredientesString();
-        ingredientesString = ingredientesString.replaceAll("\\s+e\\s+", " ");
-        ingredientesList = new ArrayList<>(Arrays.asList(ingredientesString.split("\\s+")));
-
-        generatedReceitas = receitaRepository.findByIngredientesIn(ingredientesList);
+        if (ingredientesString.contains("ou")) {
+            String[] partes = ingredientesString.split("\\s+ou\\s+");
+            for (String parte : partes) {
+                List<String> parteIngredientes = Arrays.asList(parte.trim().split("\\s+"));
+                generatedReceitas.addAll(findByIngredientes(parteIngredientes));
+            }
+        } else {
+            ingredientesString = ingredientesString.replaceAll("\\s+e\\s+", " ");
+            ingredientesList = Arrays.asList(ingredientesString.split("\\s+"));
+            generatedReceitas.addAll(findByIngredientes(ingredientesList));
+        }
 
         Collections.shuffle(generatedReceitas);
         if (generatedReceitas.isEmpty()) {
@@ -76,4 +82,8 @@ public class ReceitaService {
         return generatedReceitas;
     }
 
+    private List<Receita> findByIngredientes(List<String> ingredientesList) {
+        int totalIngredientes = ingredientesList.size();
+        return receitaRepository.findByIngredientesIn(ingredientesList, totalIngredientes);
+    }
 }
