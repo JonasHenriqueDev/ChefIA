@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 import java.lang.reflect.InvocationTargetException;
 
 @Component
-public class NullAwareBeanUtilsBean extends BeanUtilsBean {
+public class NullAwareBeanUtils extends BeanUtilsBean {
 
     @Override
     public void copyProperty(Object dest, String name, Object value) throws IllegalAccessException, InvocationTargetException {

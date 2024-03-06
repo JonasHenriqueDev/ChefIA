@@ -4,7 +4,7 @@ import br.upe.ChefIA.dominio.Receita;
 import br.upe.ChefIA.dominio.dto.IngredienteDTO;
 import br.upe.ChefIA.dominio.dto.ReceitaDTO;
 import br.upe.ChefIA.dominio.dto.mapper.ReceitaMapper;
-import br.upe.ChefIA.helper.NullAwareBeanUtilsBean;
+import br.upe.ChefIA.helper.NullAwareBeanUtils;
 import br.upe.ChefIA.repository.ReceitaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -25,7 +25,7 @@ public class ReceitaService {
     private static final String RECEITA_NOT_FOUND_MSG = "Infelizmente não sei nenhuma receita com estes ingredientes";
     private final ReceitaRepository receitaRepository;
     private final ReceitaMapper mapper;
-    private final NullAwareBeanUtilsBean beanUtilsBean;
+    private final NullAwareBeanUtils beanUtilsBean;
 
     public List<Receita> findAll() {
         return receitaRepository.findAll();
