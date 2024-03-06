@@ -22,8 +22,8 @@ public class ReceitaMapper {
         return mapper.map(entity, ReceitaDTO.class);
     }
 
-    public List<ReceitaDTO> toDTO(List<Receita> estudantes) {
-        return estudantes.stream()
+    public List<ReceitaDTO> toDTO(List<Receita> receitas) {
+        return receitas.stream()
                 .map(this::toDTO)
                 .collect(Collectors.toList());
     }
