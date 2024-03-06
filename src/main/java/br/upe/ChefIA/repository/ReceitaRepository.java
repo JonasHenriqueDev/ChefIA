@@ -11,6 +11,6 @@ import java.util.List;
 @Repository
 public interface ReceitaRepository extends JpaRepository<Receita, Long> {
 
-    @Query("SELECT r FROM receitas r JOIN r.macro_ingredientes i WHERE i IN :ingredientes")
-    List<Receita> findByIngredientesIn(@Param("ingredientes") List<String> ingredientes);
+    @Query("SELECT r FROM receitas r JOIN r.macro_ingredientes i WHERE i IN :ingredientes GROUP BY r HAVING COUNT(DISTINCT i) = :totalIngredientes")
+    List<Receita> findByIngredientesIn(@Param("ingredientes") List<String> ingredientes, @Param("totalIngredientes") int totalIngredientes);
 }

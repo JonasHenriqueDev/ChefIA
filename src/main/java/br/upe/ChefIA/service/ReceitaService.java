@@ -63,7 +63,8 @@ public class ReceitaService {
         ingredientesString = ingredientesString.replaceAll("\\s+e\\s+", " ");
         ingredientesList = new ArrayList<>(Arrays.asList(ingredientesString.split("\\s+")));
 
-        generatedReceitas = receitaRepository.findByIngredientesIn(ingredientesList);
+        int totalIngredientes = ingredientesList.size();
+        generatedReceitas = receitaRepository.findByIngredientesIn(ingredientesList, totalIngredientes);
 
         Collections.shuffle(generatedReceitas);
         if (generatedReceitas.isEmpty()) {
