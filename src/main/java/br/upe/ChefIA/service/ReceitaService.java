@@ -55,16 +55,21 @@ public class ReceitaService {
     }
 
     public List<Receita> generate(IngredienteDTO dto) {
-        List<Receita> generatedReceitas;
-        List<String> ingredientesList;
-        String ingredientesString;
+        List<Receita> generatedReceitas = new ArrayList<>();
+        List<String> ingredientesList = new ArrayList<>();
+        String ingredientesString = dto.getIngredientesString();
 
-        ingredientesString = dto.getIngredientesString();
-        ingredientesString = ingredientesString.replaceAll("\\s+e\\s+", " ");
-        ingredientesList = new ArrayList<>(Arrays.asList(ingredientesString.split("\\s+")));
-
-        int totalIngredientes = ingredientesList.size();
-        generatedReceitas = receitaRepository.findByIngredientesIn(ingredientesList, totalIngredientes);
+        if (ingredientesString.contains("ou")) {
+            String[] partes = ingredientesString.split("\\s+ou\\s+");
+            for (String parte : partes) {
+                List<String> parteIngredientes = Arrays.asList(parte.trim().split("\\s+"));
+                generatedReceitas.addAll(findByIngredientes(parteIngredientes));
+            }
+        } else {
+            ingredientesString = ingredientesString.replaceAll("\\s+e\\s+", " ");
+            ingredientesList = Arrays.asList(ingredientesString.split("\\s+"));
+            generatedReceitas.addAll(findByIngredientes(ingredientesList));
+        }
 
         Collections.shuffle(generatedReceitas);
         if (generatedReceitas.isEmpty()) {
@@ -77,4 +82,8 @@ public class ReceitaService {
         return generatedReceitas;
     }
 
+    private List<Receita> findByIngredientes(List<String> ingredientesList) {
+        int totalIngredientes = ingredientesList.size();
+        return receitaRepository.findByIngredientesIn(ingredientesList, totalIngredientes);
+    }
 }
