@@ -45,30 +45,36 @@ public class ReceitaService {
     }
 
     public Receita update(Long id, ReceitaDTO dto) throws InvocationTargetException, IllegalAccessException {
-            Receita currentReceita = receitaRepository.findById(id).get();
-            Receita updatedReceita = mapper.toEntity(dto);
+        Receita currentReceita = receitaRepository.findById(id).get();
+        Receita updatedReceita = mapper.toEntity(dto);
 
-            beanUtilsBean.copyProperties(currentReceita, updatedReceita);
+        beanUtilsBean.copyProperties(currentReceita, updatedReceita);
 
-            return receitaRepository.save(currentReceita);
+        return receitaRepository.save(currentReceita);
 
     }
 
     public List<Receita> generate(IngredienteDTO dto) {
         List<Receita> generatedReceitas = new ArrayList<>();
-        List<String> ingredientesList = new ArrayList<>();
+        List<String> ingredientesList;
         String ingredientesString = dto.getIngredientesString();
 
-        if (ingredientesString.contains("ou")) {
+        if (ingredientesString.contains("sem")) {
+            String[] partes = ingredientesString.split("\\s+sem\\s+");
+            ingredientesList = Arrays.asList(partes[0].trim().split("\\s+"));
+            List<String> ingredientesSem = Arrays.asList(partes[1].trim().split("\\s+"));
+
+            generatedReceitas.addAll(findByIngredientes(ingredientesList, ingredientesSem));
+        } else if (ingredientesString.contains("ou")) {
             String[] partes = ingredientesString.split("\\s+ou\\s+");
             for (String parte : partes) {
                 List<String> parteIngredientes = Arrays.asList(parte.trim().split("\\s+"));
-                generatedReceitas.addAll(findByIngredientes(parteIngredientes));
+                generatedReceitas.addAll(findByIngredientes(parteIngredientes, null));
             }
         } else {
             ingredientesString = ingredientesString.replaceAll("\\s+e\\s+", " ");
             ingredientesList = Arrays.asList(ingredientesString.split("\\s+"));
-            generatedReceitas.addAll(findByIngredientes(ingredientesList));
+            generatedReceitas.addAll(findByIngredientes(ingredientesList, null));
         }
 
         Collections.shuffle(generatedReceitas);
@@ -82,8 +88,7 @@ public class ReceitaService {
         return generatedReceitas;
     }
 
-    private List<Receita> findByIngredientes(List<String> ingredientesList) {
-        int totalIngredientes = ingredientesList.size();
-        return receitaRepository.findByIngredientesIn(ingredientesList, totalIngredientes);
+    private List<Receita> findByIngredientes(List<String> ingredientesList, List<String> ingredientesSem) {
+        return receitaRepository.findByIngredientesInAndSem(ingredientesList, ingredientesSem);
     }
 }
