@@ -84,6 +84,7 @@ public class ReceitaService {
 
     private List<Receita> findByIngredientes(List<String> ingredientesList) {
         int totalIngredientes = ingredientesList.size();
+        //------
         return receitaRepository.findByIngredientesIn(ingredientesList, totalIngredientes);
     }
 }
