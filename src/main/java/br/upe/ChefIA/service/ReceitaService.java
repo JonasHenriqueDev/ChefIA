@@ -16,6 +16,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @Service
 @RequiredArgsConstructor
 public class ReceitaService {
@@ -24,28 +27,46 @@ public class ReceitaService {
     private static final String SPACE_REGEX = "\\s+";
     private static final String OU_REGEX = "\\s+ou\\s+";
 
+    private static final String LOG_BUSCANDO_TODAS_RECEITAS = "Buscando todas as receitas.";
+    private static final String LOG_BUSCANDO_RECEITA_POR_ID = "Buscando receita pelo ID: {}";
+    private static final String LOG_DELETANDO_RECEITA_POR_ID = "Deletando receita pelo ID: {}";
+    private static final String LOG_SALVANDO_NOVA_RECEITA = "Salvando nova receita.";
+    private static final String LOG_ATUALIZANDO_RECEITA_POR_ID = "Atualizando receita pelo ID: {}";
+    private static final String LOG_GERANDO_RECEITAS = "Gerando receitas com base nos ingredientes fornecidos.";
+    private static final String LOG_NENHUMA_RECEITA_ENCONTRADA = "Nenhuma receita encontrada com os ingredientes fornecidos.";
+    private static final String LOG_BUSCANDO_RECEITAS_POR_INGREDIENTES = "Buscando receitas pelos ingredientes fornecidos.";
+    private static final String LOG_VERIFICANDO_LISTA_INGREDIENTES_VAZIA = "Verificando se a lista de ingredientes é vazia: {}";
+
+    // Logger
+    private static final Logger logger = LoggerFactory.getLogger(ReceitaService.class);
+
     private final ReceitaRepository receitaRepository;
     private final ReceitaMapper mapper;
     private final NullAwareBeanUtils beanUtilsBean;
 
     public List<Receita> findAll() {
+        logger.info(LOG_BUSCANDO_TODAS_RECEITAS);
         return receitaRepository.findAll();
     }
 
     public Receita findById(Long id) {
+        logger.info(LOG_BUSCANDO_RECEITA_POR_ID, id);
         return receitaRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Receita não encontrada"));
     }
 
     public void deleteById(Long id) {
+        logger.info(LOG_DELETANDO_RECEITA_POR_ID, id);
         receitaRepository.deleteById(id);
     }
 
     public Receita save(ReceitaDTO dto) {
+        logger.info(LOG_SALVANDO_NOVA_RECEITA);
         Receita receita = mapper.toEntity(dto);
         return receitaRepository.save(receita);
     }
 
     public Receita update(Long id, ReceitaDTO dto) throws InvocationTargetException, IllegalAccessException {
+        logger.info(LOG_ATUALIZANDO_RECEITA_POR_ID, id);
         Receita currentReceita = receitaRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Receita não encontrada"));
         Receita updatedReceita = mapper.toEntity(dto);
 
@@ -55,6 +76,7 @@ public class ReceitaService {
     }
 
     public List<Receita> generate(IngredienteDTO dto) {
+        logger.info(LOG_GERANDO_RECEITAS);
         List<Receita> generatedReceitas = new ArrayList<>();
         String ingredientesString = dto.getIngredientesString();
         List<String> ingredientesList = new ArrayList<>();
@@ -80,6 +102,7 @@ public class ReceitaService {
 
         Collections.shuffle(generatedReceitas);
         if (generatedReceitas.isEmpty()) {
+            logger.warn(LOG_NENHUMA_RECEITA_ENCONTRADA);
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, RECEITA_NOT_FOUND_MSG);
         }
         if (generatedReceitas.size() > 3) {
@@ -90,16 +113,14 @@ public class ReceitaService {
     }
 
     private List<Receita> findByIngredientes(List<String> ingredientesList, List<String> ingredientesExcluidos) {
+        logger.info(LOG_BUSCANDO_RECEITAS_POR_INGREDIENTES);
         ingredientesList.removeAll(Collections.singleton("e"));
         int totalIngredientes = ingredientesList.size();
 
-        System.out.println(ingredientesExcluidos.isEmpty());
+        logger.info(LOG_VERIFICANDO_LISTA_INGREDIENTES_VAZIA, ingredientesExcluidos.isEmpty());
         if (ingredientesList.isEmpty()) {
             return receitaRepository.findByNotIngredientesIn(ingredientesExcluidos);
         }
-
-        System.out.println("sem: " + ingredientesExcluidos);
-        System.out.println("list: " + ingredientesList);
 
         return receitaRepository.findByIngredientesIn(ingredientesList, ingredientesExcluidos, totalIngredientes);
     }
