@@ -13,90 +13,96 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @Service
 @RequiredArgsConstructor
-
 public class ReceitaService {
 
     private static final String RECEITA_NOT_FOUND_MSG = "Infelizmente não sei nenhuma receita com estes ingredientes";
-    private static final String OU_REGEX = "\\s+ou\\s+";
-    private static final String E_REGEX = "\\s+e\\s+";
-    private static final String SEM_REGEX = "\\s+sem\\s+";
     private static final String SPACE_REGEX = "\\s+";
+    private static final String OU_REGEX = "\\s+ou\\s+";
 
+    private static final String LOG_BUSCANDO_TODAS_RECEITAS = "Buscando todas as receitas.";
+    private static final String LOG_BUSCANDO_RECEITA_POR_ID = "Buscando receita pelo ID: {}";
+    private static final String LOG_DELETANDO_RECEITA_POR_ID = "Deletando receita pelo ID: {}";
+    private static final String LOG_SALVANDO_NOVA_RECEITA = "Salvando nova receita.";
+    private static final String LOG_ATUALIZANDO_RECEITA_POR_ID = "Atualizando receita pelo ID: {}";
+    private static final String LOG_GERANDO_RECEITAS = "Gerando receitas com base nos ingredientes fornecidos.";
+    private static final String LOG_NENHUMA_RECEITA_ENCONTRADA = "Nenhuma receita encontrada com os ingredientes fornecidos.";
+    private static final String LOG_BUSCANDO_RECEITAS_POR_INGREDIENTES = "Buscando receitas pelos ingredientes fornecidos.";
+    private static final String LOG_VERIFICANDO_LISTA_INGREDIENTES_VAZIA = "Verificando se a lista de ingredientes é vazia: {}";
+
+    // Logger
+    private static final Logger logger = LoggerFactory.getLogger(ReceitaService.class);
 
     private final ReceitaRepository receitaRepository;
     private final ReceitaMapper mapper;
     private final NullAwareBeanUtils beanUtilsBean;
 
-
     public List<Receita> findAll() {
+        logger.info(LOG_BUSCANDO_TODAS_RECEITAS);
         return receitaRepository.findAll();
     }
 
     public Receita findById(Long id) {
-        return receitaRepository.findById(id).get();
+        logger.info(LOG_BUSCANDO_RECEITA_POR_ID, id);
+        return receitaRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Receita não encontrada"));
     }
 
     public void deleteById(Long id) {
+        logger.info(LOG_DELETANDO_RECEITA_POR_ID, id);
         receitaRepository.deleteById(id);
     }
 
     public Receita save(ReceitaDTO dto) {
+        logger.info(LOG_SALVANDO_NOVA_RECEITA);
         Receita receita = mapper.toEntity(dto);
         return receitaRepository.save(receita);
     }
 
     public Receita update(Long id, ReceitaDTO dto) throws InvocationTargetException, IllegalAccessException {
-        Receita currentReceita = receitaRepository.findById(id).get();
+        logger.info(LOG_ATUALIZANDO_RECEITA_POR_ID, id);
+        Receita currentReceita = receitaRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Receita não encontrada"));
         Receita updatedReceita = mapper.toEntity(dto);
 
         beanUtilsBean.copyProperties(currentReceita, updatedReceita);
 
         return receitaRepository.save(currentReceita);
-
     }
 
     public List<Receita> generate(IngredienteDTO dto) {
+        logger.info(LOG_GERANDO_RECEITAS);
         List<Receita> generatedReceitas = new ArrayList<>();
+        String ingredientesString = dto.getIngredientesString();
         List<String> ingredientesList = new ArrayList<>();
         List<String> ingredientesExcluidos = new ArrayList<>();
-        String ingredientesString = dto.getIngredientesString();
 
-        if (ingredientesString.contains(" ou ")) {
-            String[] partes = ingredientesString.split(OU_REGEX);
-            for (String parte : partes) {
-                if (parte.contains(" sem ")) {
-                    String[] partesComSem = parte.split(SEM_REGEX);
-                    ingredientesList.addAll(Arrays.asList(partesComSem[0].trim().split(SPACE_REGEX)));
-                    ingredientesExcluidos.addAll(Arrays.asList(partesComSem[1].trim().split(SPACE_REGEX)));
+        String[] partes = ingredientesString.split(OU_REGEX);
+        for (String parte : partes) {
+
+            String[] subPartes = parte.split(SPACE_REGEX);
+            boolean excluir = false;
+            for (String subParte : subPartes) {
+                if (subParte.equals("sem")) {
+                    excluir = true;
+                } else if (excluir) {
+                    ingredientesExcluidos.add(subParte.trim());
                 } else {
-                    List<String> parteIngredientes = Arrays.asList(parte.trim().split(SPACE_REGEX));
-                    generatedReceitas.addAll(findByIngredientes(parteIngredientes, ingredientesExcluidos));
+                    ingredientesList.add(subParte.trim());
                 }
             }
-        } else {
-            String[] partesComSem = ingredientesString.split(SEM_REGEX);
-            if (partesComSem.length == 2) {
-                ingredientesList.addAll(Arrays.asList(partesComSem[0].trim().split(SPACE_REGEX)));
-                ingredientesExcluidos.addAll(Arrays.asList(partesComSem[1].trim().split(SPACE_REGEX)));
 
-            } else if (partesComSem.length == 1) {
-                ingredientesExcluidos.addAll(Arrays.asList(partesComSem[0].trim().split(SPACE_REGEX)));
-            } else {
-                ingredientesString = ingredientesString.replaceAll(E_REGEX, " ");
-                ingredientesList = Arrays.asList(ingredientesString.split(SPACE_REGEX));
-            }
+            generatedReceitas.addAll(findByIngredientes(ingredientesList, ingredientesExcluidos));
         }
-
-        generatedReceitas.addAll(findByIngredientes(ingredientesList, ingredientesExcluidos));
 
         Collections.shuffle(generatedReceitas);
         if (generatedReceitas.isEmpty()) {
+            logger.warn(LOG_NENHUMA_RECEITA_ENCONTRADA);
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, RECEITA_NOT_FOUND_MSG);
         }
         if (generatedReceitas.size() > 3) {
@@ -107,15 +113,15 @@ public class ReceitaService {
     }
 
     private List<Receita> findByIngredientes(List<String> ingredientesList, List<String> ingredientesExcluidos) {
-        ingredientesExcluidos.removeAll(Collections.singleton("sem"));
+        logger.info(LOG_BUSCANDO_RECEITAS_POR_INGREDIENTES);
         ingredientesList.removeAll(Collections.singleton("e"));
         int totalIngredientes = ingredientesList.size();
 
+        logger.info(LOG_VERIFICANDO_LISTA_INGREDIENTES_VAZIA, ingredientesExcluidos.isEmpty());
         if (ingredientesList.isEmpty()) {
             return receitaRepository.findByNotIngredientesIn(ingredientesExcluidos);
         }
 
         return receitaRepository.findByIngredientesIn(ingredientesList, ingredientesExcluidos, totalIngredientes);
     }
-
 }
