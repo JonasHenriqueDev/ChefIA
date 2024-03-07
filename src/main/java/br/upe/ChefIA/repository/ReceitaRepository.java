@@ -16,4 +16,5 @@ public interface ReceitaRepository extends JpaRepository<Receita, Long> {
 
     @Query("SELECT r FROM receitas r WHERE NOT EXISTS (SELECT 1 FROM r.macro_ingredientes i WHERE i IN :ingredientes)")
     List<Receita> findByNotIngredientesIn(@Param("ingredientes") List<String> ingredientes);
+
 }
