@@ -56,7 +56,7 @@ public class ReceitaService {
 
     public List<Receita> generate(IngredienteDTO dto) {
         List<Receita> generatedReceitas = new ArrayList<>();
-        List<String> ingredientesList = new ArrayList<>();
+        List<String> ingredientesList;
         String ingredientesString = dto.getIngredientesString();
 
         if (ingredientesString.contains("ou")) {
